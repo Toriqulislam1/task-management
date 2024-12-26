@@ -4,35 +4,94 @@
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-sm">
+            <div class="card shadow-lg border-0">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Create Task</h4>
+                    <h4 class="mb-0 text-center">Create Task</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('tasks.store') }}" method="POST">
+                    <form action="{{ route('tasks.store') }}" method="POST" novalidate>
                         @csrf
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <input type="text" name="title" id="title" class="form-control" placeholder="Enter task title" required>
+
+                        <!-- Title Input -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-bold">Task Title</label>
+                            <input
+                                type="text"
+                                name="title"
+                                id="title"
+                                class="form-control @error('title') is-invalid @enderror"
+                                placeholder="Enter task title"
+                                value="{{ old('title') }}"
+                                required>
+                            @error('title')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea name="description" id="description" class="form-control" rows="4" placeholder="Enter task description" required></textarea>
+
+                        <!-- Description Input -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-bold">Description</label>
+                            <textarea
+                                name="description"
+                                id="description"
+                                class="form-control @error('description') is-invalid @enderror"
+                                rows="4"
+                                placeholder="Enter task description"
+                                required>{{ old('description') }}</textarea>
+                            @error('description')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select name="status" id="status" class="form-select" required>
-                                <option value="Pending">Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
+
+                        <!-- Status Dropdown -->
+                        <div class="mb-4">
+                            <label for="status" class="form-label fw-bold">Status</label>
+                            <select
+                                name="status"
+                                id="status"
+                                class="form-select @error('status') is-invalid @enderror"
+                                required>
+                                <option value="" disabled selected>Select a status</option>
+                                <option value="Pending" {{ old('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="In Progress" {{ old('status') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="Completed" {{ old('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
                             </select>
+                            @error('status')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
-                        <div class="mb-3">
-                            <label for="due_date" class="form-label">Due Date</label>
-                            <input type="date" name="due_date" id="due_date" class="form-control" required>
+
+                        <!-- Due Date Input -->
+                        <div class="mb-4">
+                            <label for="due_date" class="form-label fw-bold">Due Date</label>
+                            <input
+                                type="date"
+                                name="due_date"
+                                id="due_date"
+                                class="form-control @error('due_date') is-invalid @enderror"
+                                value="{{ old('due_date') }}"
+                                required>
+                            @error('due_date')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">Save Task</button>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-save"></i> Save Task
+                            </button>
                         </div>
                     </form>
                 </div>

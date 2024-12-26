@@ -2,15 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Task;
-use App\Models\User;
+use App\Services\TaskService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
+use Illuminate\Http\Request;
 class TaskController extends Controller
 {
-    public function index()
+    protected $taskService;
+
+    public function __construct(TaskService $taskService)
     {
-        $tasks = Task::where('user_id', auth()->id())->orderBy('due_date')->get();
+        $this->taskService = $taskService;
+    }
+
+    public function index(Request $request)
+    {
+        $status = $request->input('status');
+        $tasks = $this->taskService->getTasksByUser(Auth::id(), $status);
+
         return view('admin.tasks.index', compact('tasks'));
     }
 
@@ -19,20 +30,9 @@ class TaskController extends Controller
         return view('admin.tasks.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
-        $request->validate([
-            'title' => 'required',
-            'due_date' => 'required|date',
-        ]);
-
-        Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'status' => $request->status ?? 'Pending',
-            'due_date' => $request->due_date,
-            'user_id' => auth()->id(),
-        ]);
+        $this->taskService->createTask($request->validated(), Auth::id());
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
@@ -43,26 +43,21 @@ class TaskController extends Controller
         return view('admin.tasks.edit', compact('task'));
     }
 
-
-
-    public function update(Request $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
         $this->authorize('update', $task);
 
-        $request->validate([
-            'title' => 'required',
-            'due_date' => 'required|date',
-        ]);
+        $this->taskService->updateTask($task, $request->validated());
 
-        $task->update($request->all());
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
 
     public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
-        $task->delete();
+
+        $this->taskService->deleteTask($task);
+
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
     }
-
 }

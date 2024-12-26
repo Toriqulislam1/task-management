@@ -3,18 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Task;
-use Auth;
+use App\Services\TaskService;
+use Illuminate\Support\Facades\Auth;
+
 class HomeController extends Controller
 {
+    protected $taskService;
+
     /**
      * Create a new controller instance.
      *
-     * @return void
+     * @param TaskService $taskService
      */
-    public function __construct()
+    public function __construct(TaskService $taskService)
     {
         $this->middleware('auth');
+        $this->taskService = $taskService;
     }
 
     /**
@@ -22,15 +26,23 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::where('user_id', auth::user()->id)->orderBy('due_date')->get();
-        return view('home',compact('tasks'));
-    }
-    public function dashboard()
-    {
-        $tasks = Task::where('user_id', auth::user()->id)->orderBy('due_date')->get();
-        return view('home',compact('tasks'));
+        $status = $request->input('status');
+        $tasks = $this->taskService->getTasksByUser(Auth::id(), $status);
+
+        return view('home', compact('tasks'));
     }
 
+    /**
+     * Show the user dashboard with all tasks.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function dashboard()
+    {
+        $tasks = $this->taskService->getTasksByUser(Auth::id());
+
+        return view('home', compact('tasks'));
+    }
 }
